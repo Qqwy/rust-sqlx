@@ -333,10 +333,20 @@ async fn test_column_override_exact_nullable() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Default)]
+#[repr(transparent)]
+struct MyId(u32);
+
+impl sqlx::types::TryFromType<i64> for MyId {
+    type Error = <u32 as TryFrom<i64>>::Error;
+    fn try_from_type(value: i64) -> Result<Self, Self::Error> {
+        value.try_into().map(MyId)
+    }
+}
 
 #[derive(Debug)]
 struct AccountWithSmallerId {
-    id: u32,
+    id: MyId,
     name: String,
     is_active: Option<bool>,
 }
@@ -349,7 +359,7 @@ async fn test_query_as_with_try_from_conversion() -> anyhow::Result<()> {
         .fetch_one(&mut conn)
         .await?;
 
-    assert_eq!(account.id, 1);
+    assert_eq!(account.id, MyId(1));
     assert_eq!(account.name, "Herp Derpinson");
     assert_eq!(account.is_active, Some(true));
 

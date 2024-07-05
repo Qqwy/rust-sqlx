@@ -144,8 +144,8 @@ pub fn quote_query_as<DB: DatabaseExt>(
                     // "try expression alternatives have incompatible types"
                     // it doesn't seem to hurt inference in the other branches
                     let #var_name = 
-                        row.try_get_unchecked::<#type_, _>(#i)?
-                        .try_into().map_err(|e| {
+                        sqlx_core::types::TryFromType::try_from_type(row.try_get_unchecked::<#type_, _>(#i)?)
+                        .map_err(|e| {
                             let index = #i;
                             let index_string = format!("{index:?}");
                             sqlx_core::Error::ColumnDecode{index: index_string, source: Box::new(e)}

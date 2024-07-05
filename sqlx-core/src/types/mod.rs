@@ -236,3 +236,19 @@ impl<T: Type<DB>, DB: Database> Type<DB> for Option<T> {
         ty.is_null() || <T as Type<DB>>::compatible(ty)
     }
 }
+
+pub trait TryFromType<T>: Sized {
+    type Error;
+
+    fn try_from_type(value: T) -> Result<Self, Self::Error>;
+}
+
+impl<T, U> TryFromType<U> for T
+where
+  T: From<U> {
+    type Error= std::convert::Infallible;
+
+    fn try_from_type(value: U) -> Result<Self, Self::Error> {
+        Ok(Self::from(value))
+    }
+}
